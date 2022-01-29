@@ -27,8 +27,8 @@ async fn main() -> Result<()> {
                         }
                     }
                 }
-                let stat = Statement::default();
-                match (prepare_statment(&line, stat)) {
+                let mut stat = Statement::default();
+                match (prepare_statment(&line, &mut stat)) {
                     PrepareResult::PREPARE_SUCCESS => {}
                     PrepareResult::PREPARE_UNRECOGNIZED_STATEMENT => {}
                 }
@@ -47,17 +47,17 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-enum MetaCommandResult {
+pub enum MetaCommandResult {
     META_COMMAND_SUCCESS,
     META_COMMAND_UNRECOGNIZED_COMMAND,
 }
 
-enum PrepareResult {
+pub enum PrepareResult {
     PREPARE_SUCCESS,
     PREPARE_UNRECOGNIZED_STATEMENT,
 }
 
-enum StatementType {
+pub enum StatementType {
     STATEMENT_NONE,
     STATEMENT_INSERT,
     STATEMENT_SELECT,
@@ -71,12 +71,12 @@ fn do_meta_command(input: &str) -> MetaCommandResult {
     }
 }
 
-fn prepare_statment(input: &str, mut stat: Statement) -> PrepareResult {
-    if ("insert".eq(&input[0..12])) {
+fn prepare_statment(input: &str, stat: &mut Statement) -> PrepareResult {
+    if ("insert".eq(&input[0..6])) {
         stat.statmentType = StatementType::STATEMENT_INSERT;
         return PrepareResult::PREPARE_SUCCESS
     }
-    if ("select".eq(&input[0..12])) {
+    if ("select".eq(&input[0..6])) {
         stat.statmentType = StatementType::STATEMENT_SELECT;
         return PrepareResult::PREPARE_SUCCESS
     }
