@@ -44,7 +44,7 @@ async fn main() -> Result<()> {
                     PrepareResult::PREPARE_SUCCESS => {}
                     PrepareResult::PREPARE_UNRECOGNIZED_STATEMENT => {}
                 }
-                execute_statement(stat, table);
+                execute_statement(stat, &mut table);
             }
             Err(ReadlineError::Interrupted) => {
                 println!("Interrupted");
@@ -123,7 +123,7 @@ pub struct Table {
     pub schema_vec: Vec<Row>,
 }
 
-fn execute_statement(stat: Statement, table: Table) {
+fn execute_statement(stat: Statement, table:  &mut Table) {
     match stat.statmentType {
         StatementType::STATEMENT_INSERT => {
             execute_insert(stat, table);
@@ -135,7 +135,7 @@ fn execute_statement(stat: Statement, table: Table) {
     }
 }
 
-fn execute_insert(stat: Statement, mut table: Table) -> ExecuteResult {
+fn execute_insert(stat: Statement, table: &mut Table) -> ExecuteResult {
     if (table.num_rows >= TABLE_MAX_ROWS) {
         return EXECUTE_TABLE_FULL;
     }
@@ -144,8 +144,8 @@ fn execute_insert(stat: Statement, mut table: Table) -> ExecuteResult {
     return EXECUTE_SUCCESS;
 }
 
-fn execute_select(stat: Statement, mut table: Table) {
-    for i in table.schema_vec {
+fn execute_select(stat: Statement, table: &mut Table) {
+    for i in &table.schema_vec {
         println!("email:{}", i.email);
         println!("username:{}", i.username);
         println!("id:{}", i.id);
