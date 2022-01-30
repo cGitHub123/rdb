@@ -95,6 +95,9 @@ fn do_meta_command(input: &str) -> MetaCommandResult {
 fn prepare_statment(input: &str, stat: &mut Statement) -> PrepareResult {
     if ("insert".eq(&input[0..6])) {
         stat.statmentType = StatementType::STATEMENT_INSERT;
+        stat.row_to_insert.id = input.split(' ').collect()[0];
+        stat.row_to_insert.username = input.split( ' ').collect()[1];
+        stat.row_to_insert.email = input.split(' ').collect()[2];
         return PrepareResult::PREPARE_SUCCESS;
     }
     if ("select".eq(&input[0..6])) {
@@ -112,7 +115,7 @@ pub struct Statement {
 
 #[derive(Default)]
 pub struct Row {
-    pub id: u32,
+    pub id: String,
     pub username: String,
     pub email: String,
 }
@@ -123,7 +126,7 @@ pub struct Table {
     pub schema_vec: Vec<Row>,
 }
 
-fn execute_statement(stat: Statement, table:  &mut Table) {
+fn execute_statement(stat: Statement, table: &mut Table) {
     match stat.statmentType {
         StatementType::STATEMENT_INSERT => {
             execute_insert(stat, table);
