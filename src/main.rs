@@ -95,9 +95,10 @@ fn do_meta_command(input: &str) -> MetaCommandResult {
 fn prepare_statment(input: &str, stat: &mut Statement) -> PrepareResult {
     if ("insert".eq(&input[0..6])) {
         stat.statmentType = StatementType::STATEMENT_INSERT;
-        stat.row_to_insert.id = input.split(' ').collect()[0];
-        stat.row_to_insert.username = input.split( ' ').collect()[1];
-        stat.row_to_insert.email = input.split(' ').collect()[2];
+        let x: Vec<&str> = input.split(' ').collect();
+        stat.row_to_insert.id = x[1].parse().unwrap();
+        stat.row_to_insert.username = x[2].parse().unwrap();
+        stat.row_to_insert.email = x[3].parse().unwrap();
         return PrepareResult::PREPARE_SUCCESS;
     }
     if ("select".eq(&input[0..6])) {
