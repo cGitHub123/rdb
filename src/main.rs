@@ -1,11 +1,17 @@
+use std::fs;
+use std::fs::File;
+use std::io::{BufReader, BufWriter, Read, Write};
 use std::iter::Successors;
 use std::os::linux::raw::stat;
 use std::process::exit;
 use std::ptr::null;
 
 use anyhow::{anyhow, Result};
+use bincode::{deserialize_from, Deserializer, serialize_into};
 use rustyline::Editor;
 use rustyline::error::ReadlineError;
+use serde::Deserialize;
+use serde::Serialize;
 
 use crate::ExecuteResult::{EXECUTE_SUCCESS, EXECUTE_TABLE_FULL};
 use crate::StatementType::STATEMENT_NONE;
@@ -21,7 +27,7 @@ const TABLE_MAX_ROWS: u32 = ROWS_PER_PAGE * 100;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let mut table = Table::default();
+    let mut table = db_open();
     let mut rl = Editor::<()>::new();
     loop {
         let readline = rl.readline("db > ");
@@ -29,7 +35,7 @@ async fn main() -> Result<()> {
             Ok(line) => {
                 rl.add_history_entry(line.as_str());
                 if (line.starts_with(".")) {
-                    match (do_meta_command(&line)) {
+                    match (do_meta_command(&line, &table)) {
                         MetaCommandResult::META_COMMAND_SUCCESS => {
                             continue;
                         }
@@ -84,8 +90,9 @@ pub enum ExecuteResult {
     EXECUTE_TABLE_FULL,
 }
 
-fn do_meta_command(input: &str) -> MetaCommandResult {
+fn do_meta_command(input: &str, table: &Table) -> MetaCommandResult {
     if (input.eq(".exit")) {
+        db_close(table);
         MetaCommandResult::META_COMMAND_SUCCESS
     } else {
         MetaCommandResult::META_COMMAND_UNRECOGNIZED_COMMAND
@@ -114,14 +121,14 @@ pub struct Statement {
     pub row_to_insert: Row,
 }
 
-#[derive(Default)]
+#[derive(Default, Debug, Serialize, Deserialize)]
 pub struct Row {
     pub id: String,
     pub username: String,
     pub email: String,
 }
 
-#[derive(Default)]
+#[derive(Default, Debug, Serialize, Deserialize)]
 pub struct Table {
     pub num_rows: u32,
     pub schema_vec: Vec<Row>,
@@ -154,5 +161,22 @@ fn execute_select(stat: Statement, table: &mut Table) {
         println!("username:{}", i.username);
         println!("id:{}", i.id);
     }
+}
+
+fn db_open() -> Table {
+    let mut file = File::open("./foo.db");
+    let mut f = BufReader::new(file.unwrap());
+    let mut storage: Table = deserialize_from(&mut f).unwrap();
+    return storage;
+}
+
+fn db_close(table: &Table) {
+    page_flush(table);
+}
+
+fn page_flush(table: &Table) {
+    let mut file = File::open("./foo.db");
+    let mut f = BufWriter::new(file.unwrap());
+    serialize_into(&mut f, &table).unwrap();
 }
 
