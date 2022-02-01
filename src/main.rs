@@ -7,7 +7,7 @@ use std::process::exit;
 use std::ptr::null;
 
 use anyhow::{anyhow, Result};
-use bincode::{deserialize_from, Deserializer, serialize_into};
+use bincode::{config, deserialize_from, Deserializer, serialize_into};
 use rustyline::Editor;
 use rustyline::error::ReadlineError;
 use serde::Deserialize;
@@ -35,9 +35,9 @@ async fn main() -> Result<()> {
             Ok(line) => {
                 rl.add_history_entry(line.as_str());
                 if (line.starts_with(".")) {
-                    match (do_meta_command(&line, &table)) {
+                    match do_meta_command(&line, &table) {
                         MetaCommandResult::META_COMMAND_SUCCESS => {
-                            continue;
+
                         }
                         MetaCommandResult::META_COMMAND_UNRECOGNIZED_COMMAND => {
                             println!("Unrecognized command");
@@ -93,9 +93,9 @@ pub enum ExecuteResult {
 fn do_meta_command(input: &str, table: &Table) -> MetaCommandResult {
     if (input.eq(".exit")) {
         db_close(table);
-        MetaCommandResult::META_COMMAND_SUCCESS
+        exit(0);
     } else {
-        MetaCommandResult::META_COMMAND_UNRECOGNIZED_COMMAND
+        return MetaCommandResult::META_COMMAND_SUCCESS;
     }
 }
 
@@ -123,7 +123,7 @@ pub struct Statement {
 
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct Row {
-    pub id: String,
+    pub id: u32,
     pub username: String,
     pub email: String,
 }
@@ -175,7 +175,8 @@ fn db_close(table: &Table) {
 }
 
 fn page_flush(table: &Table) {
-    let mut file = File::open("./foo.db");
+    fs::remove_file("./foo.db");
+    let mut file = File::create("./foo.db");
     let mut f = BufWriter::new(file.unwrap());
     serialize_into(&mut f, &table).unwrap();
 }
