@@ -17,7 +17,7 @@ impl Wal {
             .read(true)
             .write(true)
             .truncate(true)
-            .open(parent_directoy.join("wal"))?;
+            .open(parent_directoy.join("../../wal"))?;
 
         Ok(Self { file: fd })
     }

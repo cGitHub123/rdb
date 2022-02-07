@@ -13,9 +13,10 @@ use rustyline::Editor;
 use rustyline::error::ReadlineError;
 use serde::Deserialize;
 use serde::Serialize;
-use rdb::btree::{BTree, BTreeBuilder};
-use rdb::error::Error;
-use rdb::node_type::KeyValuePair;
+
+use rdb_btree::node_type::KeyValuePair;
+use rdb_btree::btree::{BTree, BTreeBuilder};
+use rdb_btree::error::Error;
 
 use crate::ExecuteResult::{EXECUTE_SUCCESS, EXECUTE_TABLE_FULL};
 use crate::StatementType::STATEMENT_NONE;
@@ -32,7 +33,7 @@ const TABLE_MAX_ROWS: u32 = ROWS_PER_PAGE * 100;
 #[tokio::main]
 async fn main() -> Result<()> {
     let mut btree = BTreeBuilder::new()
-        .path(Path::new("./db"))
+        .path(Path::new("../db"))
         .b_parameter(2)
         .build().unwrap();
     let mut rl = Editor::<()>::new();

@@ -449,7 +449,7 @@ mod tests {
         use std::path::Path;
 
         let mut btree = BTreeBuilder::new()
-            .path(Path::new("./db"))
+            .path(Path::new("../../db"))
             .b_parameter(2)
             .build()?;
         btree.insert(KeyValuePair::new("a".to_string(), "shalom".to_string()))?;
