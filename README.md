@@ -1,3 +1,3 @@
 # rdb
 
-rdb is a toy DB for learing database system
+rdb is a toy DB for learning database system
